@@ -91,4 +91,31 @@ defmodule IslandsEngine.IslandTest do
     refute Island.overlaps?(dot, l_shape)
   end
 
+  test "guess a hit" do
+    {:ok, dot_coordinate} = Coordinate.new(4, 4)
+    {:ok, dot} = Island.new(:dot, dot_coordinate)
+
+    {:ok, guess} = Coordinate.new(4, 4)
+    {:hit, dot} = Island.guess(dot, guess)
+
+    hits = dot.hit_coordinates |> MapSet.to_list
+
+    assert hits == [
+      %Coordinate{col: 4, row: 4}
+    ]
+
+    assert Island.forested?(dot)
+  end
+
+  test "guess a miss" do
+    {:ok, dot_coordinate} = Coordinate.new(4, 4)
+    {:ok, dot} = Island.new(:dot, dot_coordinate)
+
+    {:ok, guess} = Coordinate.new(4, 3)
+    assert Island.guess(dot, guess) == :miss
+
+    assert dot.hit_coordinates |> MapSet.size == 0
+    refute Island.forested?(dot)
+  end
+
 end
