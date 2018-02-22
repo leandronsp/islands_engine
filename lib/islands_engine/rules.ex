@@ -7,6 +7,28 @@ defmodule IslandsEngine.Rules do
 
   def new(), do: %Rules{}
 
+  def check(%Rules{state: :player_1_turn} = rules, {:win_check, win_or_not}) do
+    case win_or_not do
+      :no_win -> {:ok, rules}
+      :win -> {:ok, %Rules{rules | state: :game_over}}
+    end
+  end
+
+  def check(%Rules{state: :player_2_turn} = rules, {:win_check, win_or_not}) do
+    case win_or_not do
+      :no_win -> {:ok, rules}
+      :win -> {:ok, %Rules{rules | state: :game_over}}
+    end
+  end
+
+  def check(%Rules{state: :player_1_turn} = rules, {:guess_coordinate, :player_1}) do
+    {:ok, %Rules{rules | state: :player_2_turn}}
+  end
+
+  def check(%Rules{state: :player_2_turn} = rules, {:guess_coordinate, :player_2}) do
+    {:ok, %Rules{rules | state: :player_1_turn}}
+  end
+
   def check(%Rules{state: :players_set} = rules, {:set_islands, player}) do
     rules = Map.put(rules, player, :islands_set)
 

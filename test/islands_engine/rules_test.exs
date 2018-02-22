@@ -54,9 +54,10 @@ defmodule IslandsEngine.RulesTest do
 
   test "players cannot position neither set islands once game waits to turn" do
     rules = Rules.new()
-    rules = %{rules | state: :player_1_turn}
-    rules = %{rules | player_1: :islands_set}
-    rules = %{rules | player_2: :islands_set}
+    rules = %{rules | state: :player_1_turn, player_1: :islands_set, player_2: :islands_set}
+
+    assert rules.player_1 == :islands_set
+    assert rules.player_2 == :islands_set
 
     assert Rules.check(rules, :add_player) == :error
 
@@ -65,6 +66,48 @@ defmodule IslandsEngine.RulesTest do
 
     assert Rules.check(rules, {:set_islands, :player_1}) == :error
     assert Rules.check(rules, {:set_islands, :player_2}) == :error
+  end
+
+  test "playing" do
+    rules = Rules.new()
+    rules = %{rules | state: :player_1_turn}
+
+    # player 2 cannot play until player 1 finishes
+    assert Rules.check(rules, {:guess_coordinate, :player_2}) == :error
+
+    # player 1 plays
+    {:ok, rules} = Rules.check(rules, {:guess_coordinate, :player_1})
+    assert rules.state == :player_2_turn
+
+    # player 2 plays
+    {:ok, rules} = Rules.check(rules, {:guess_coordinate, :player_2})
+    assert rules.state == :player_1_turn
+  end
+
+  test "player 1 winning" do
+    rules = Rules.new()
+    rules = %{rules | state: :player_1_turn}
+
+    # player 1 not win
+    {:ok, rules} = Rules.check(rules, {:win_check, :no_win})
+    assert rules.state == :player_1_turn
+
+    # player 1 wins and game is over
+    {:ok, rules} = Rules.check(rules, {:win_check, :win})
+    assert rules.state == :game_over
+  end
+
+  test "player 2 winning" do
+    rules = Rules.new()
+    rules = %{rules | state: :player_2_turn}
+
+    # player 2 not win
+    {:ok, rules} = Rules.check(rules, {:win_check, :no_win})
+    assert rules.state == :player_2_turn
+
+    # player 2 wins and game is over
+    {:ok, rules} = Rules.check(rules, {:win_check, :win})
+    assert rules.state == :game_over
   end
 
 end
