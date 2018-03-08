@@ -3,6 +3,7 @@ defmodule IslandsEngine.GameTest do
   alias IslandsEngine.{Game, Rules, Coordinate}
 
   setup do
+    :ets.delete(:game_state, "Frank")
     {:ok, game} = Game.start_link("Frank")
     {:ok, game: game}
   end
